@@ -1,7 +1,13 @@
 const request = require('request');
 const fs = require('fs');
+const readline = require('readline');
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
 const fetchUrl = (initStr) => {
+  
 
   let url = initStr[2];
   let filePath = initStr[3];
@@ -11,24 +17,41 @@ const fetchUrl = (initStr) => {
   
 
   request(url, (error, response, body) => {
-    console.log(error);
-    console.log("=====================")
-    writeToFileSystem(error, response, body, filePath, confirmation);
+    if (error) {
+      console.log("URL no exist");
+      process.exit();
+    }
+    console.log("=====================");
+    writeToFileSystem(body, filePath, confirmation);
   });
 
   // console.log(request.body);
 };
 
-const writeToFileSystem = (error, response, body, filePath, confirmation) => {
+const writeToFileSystem = (body, filePath, confirmation) => {
   // console.log(body);
 
+  // let fyl = fs.statSync(filePath);
+  // console.log(fyl.isFile());
+
   fs.writeFile(`./${filePath}.txt`, body, error => {
-    if (!error) confirmation();
+    if(filePath) {
+      console.log("The filepath already exists");
+      rl.question("Do you want to overwrite this file? (Y/N) ", (answer) => {
+        if(answer === "n" || answer === "N") {
+          process.exit();
+        }
+      });
+    }
+    
+    if (!error) confirmation("yaay");
+    
   });
 }
 
-const confirmation = function() {
-  console.log("Done!!!!");
+const confirmation = function(flag) {
+  console.log(flag);
+  process.exit();
 }
 
 fetchUrl(process.argv);
